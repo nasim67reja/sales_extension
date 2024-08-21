@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "Sales Assistant",
+  "description": "Scrapes user data from LinkedIn",
+  "version": "1.0",
+  "options_page": "options.html",
+  "action": {
+    "default_icon": {
+      "16": "assets/icon.png",
+      "24": "assets/icon.png",
+      "32": "assets/icon.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icon.png",
+    "48": "assets/icon.png",
+    "128": "assets/icon.png"
+  },
+  "side_panel": {
+    "default_path": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.linkedin.com/in/*",
+        "*://twitter.com/*",
+        "*://*.upwork.com/freelancers/*",
+        "*://dev.d1lyu1rj2xnay6.amplifyapp.com/*",
+        "*://hr-assistant.shadhin.ai/*"
+      ],
+      "js": ["js/vendor.js", "js/content_script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "js/background.js"
+  },
+
+  "permissions": [
+    "tabs",
+    "sidePanel",
+    "scripting",
+    "storage",
+    "unlimitedStorage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.linkedin.com/*",
+    "https://*.upwork.com/freelancers/*",
+    "https://twitter.com/*",
+    "https://6bs2pvpu3f.execute-api.us-west-2.amazonaws.com/*",
+    "https://dev.d1lyu1rj2xnay6.amplifyapp.com/*",
+    "https://hr-assistant.shadhin.ai/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

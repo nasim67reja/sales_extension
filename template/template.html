@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>template</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: sans-serif;
+            color: #343;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 10px;
+        }
+
+        .center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 22px;
+        }
+
+        .img-body {
+            margin: 20px 0;
+            gap: 30px;
+        }
+
+        .section-info {
+            margin: 25px 0;
+        }
+
+        .heading-tertiary {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .section-info-box {
+            margin-bottom: 8px;
+        }
+
+        .section-info-box p {
+            font-size: 12px;
+            color: #818e99;
+        }
+
+        .heading-five {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .w-half {
+            width: 30%;
+        }
+
+        .rounded-full {
+            border-radius: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1> Nasim Reja</h1>
+            <p>JavaScript developer | Reactjs | MERN |C++I leetcode problem solver</p>
+        </div>
+        <div class="flex img-body">
+            <img src="https://media.licdn.com/dms/image/D5603AQFpD3FYGYzhdQ/profile-displayphoto-shrink_400_400/0/1698117882621?e=1706745600&v=beta&t=BhldEEKIJYHgnvn4Zcihwqvlhqkax2l8rwe4usz3YX8"
+                class="w-half rounded-full" alt="img-profile-name">
+
+        </div>
+        <div class="section-info">
+            <h3 class="text-bold heading-tertiary">Skills</h3>
+            <div class="section-info-box">
+                <p>Reactjs,Nextjs</p>
+            </div>
+        </div>
+        <div class="section-info">
+            <h3 class="text-bold heading-tertiary">Profile Link</h3>
+            <div class="section-info-box">
+                <p><a href="https://www.linkedin.com/in/iamnasim/" target="_blank"
+                        rel="noopener noreferrer">https://www.linkedin.com/in/iamnasim/</a></p>
+            </div>
+        </div>
+
+        <!-- {visibleProfile.workExperience && ( -->
+        <div class="section-info">
+            <h3 class="text-bold heading-tertiary">Work Experience</h3>
+            <!-- {visibleProfile.workExperience.map((el, i) => ( -->
+            <div class="section-info-box">
+                <h5 class="text-bold">Solutions Developer</h5>
+                <p>Shadhin Lab LLC · Full-time</p>
+                <p>Oct 2023 - Present · 2 mos</p>
+            </div>
+            <!-- ))} -->
+        </div>
+        <!-- )} -->
+        <!-- {visibleProfile.educationDetails && ( -->
+        <div class="section-info">
+            <h3 class="text-bold heading-tertiary"> Education</h3>
+            <!-- {visibleProfile.educationDetails.map((el, i) => ( -->
+            <div class="section-info-box" key={i}>
+                <h5 class="text-bold">Hajee Mohammad Danesh Science and Technology University</h5>
+                <p>Honours, Fishing and Fisheries Sciences and Management</p>
+                <p>2018 - 2022</p>
+            </div>
+            <!-- ))} -->
+        </div>
+        <!-- )} -->
+        <!-- {visibleProfile.licenseCertification && ( -->
+        <div class="section-info">
+            <h3 class="text-bold heading-tertiary">
+                License and Certification
+            </h3>
+            <!-- {visibleProfile.licenseCertification.map((el, i) => ( -->
+            <div class="section-info-box" key={i}>
+                <h5 class="text-bold">Node.js, Express, MongoDB & More: The Complete Bootcamp 2022</h5>
+                <p>Udemy</p>
+                <p>Issued Sep 2022</p>
+            </div>
+            <!-- ))} -->
+        </div>
+        <!-- )} -->
+    </div>
+</body>
+
+</html>
