@@ -361,13 +361,37 @@ const extractLinkedinCompanyInfo = () => {
   return personalInfo;
 };
 
+const extractLinkedinContactEmail = () => {
+  // Look for the contact info section in the DOM
+  const contactInfoSection = document.querySelector(".artdeco-modal__content");
+
+  if (!contactInfoSection) {
+    return null;
+  }
+
+  // Look for the email section within the contact info section
+  const emailSection = Array.from(
+    contactInfoSection.querySelectorAll("section.pv-contact-info__contact-type")
+  ).find((section) => {
+    const header = section.querySelector("h3.pv-contact-info__header");
+    return header && header.textContent.trim().toLowerCase() === "email";
+  });
+
+  // Extract the email address from the email section
+  const emailLink = emailSection
+    ? emailSection.querySelector("a[href^='mailto:']")
+    : null;
+  const email = emailLink ? emailLink.textContent.trim() : null;
+
+  return email;
+};
+
 const extractProfileInfo = (origin: string) => {
   let personalInfo: any = "",
     workExperience: any = "",
     educationDetails: any = "",
     licenseCertification: any = "",
     skills: any = "",
-    // tags: any = "";
     company: any = false;
 
   if (origin === "linkedin") {
@@ -383,18 +407,16 @@ const extractProfileInfo = (origin: string) => {
         );
 
         if (proceed) {
-          // Navigate to the about page
-          window.location.href = `${window.location.href.replace(
-            "/mycompany/",
-            "/about/"
-          )}`;
+          let newUrl = window.location.href;
 
-          // Wait for the page to load
-          setTimeout(() => {
-            personalInfo.about = extractLinkedinCompanyAboutInfo();
-            sendProfileToBackground(personalInfo, company);
-            console.log("hit here");
-          }, 6000); // Adjust timeout as needed for the page to load
+          const urlParts = newUrl.split("/");
+          if (urlParts.length > 4 && urlParts[3] === "company") {
+            newUrl = `${urlParts[0]}//${urlParts[2]}/company/${urlParts[4]}/about/`;
+          }
+
+          window.location.href = newUrl;
+          // Don't send profile data yet
+          return;
         } else {
           sendProfileToBackground(personalInfo, company);
         }
@@ -407,6 +429,32 @@ const extractProfileInfo = (origin: string) => {
       educationDetails = extractLinkedinEducationDetails();
       licenseCertification = extractLinkedinLicenseCertification();
       skills = extractLinkedinSkills();
+
+      // Check if email information is missing
+      const email = extractLinkedinContactEmail();
+      const isOnContactInfoPage = window.location.href.includes(
+        "overlay/contact-info/"
+      );
+
+      if (!email && !isOnContactInfoPage) {
+        const proceed = confirm(
+          "Email information is not scraped. Would you like to navigate to the Contact Info page and scrape it?"
+        );
+
+        if (proceed) {
+          // Navigate to the contact info page
+          window.location.href = `${
+            window.location.href.split("?")[0]
+          }overlay/contact-info/`;
+
+          // Don't send profile data yet
+          return;
+        } else {
+          personalInfo.email = email;
+        }
+      } else {
+        personalInfo.email = email;
+      }
     }
   } else if (origin === "twitter") {
     personalInfo = extractTwitter();
@@ -415,9 +463,14 @@ const extractProfileInfo = (origin: string) => {
     skills = extractUpworkSkills();
   }
 
-  personalInfo.ProfileLink = window.location.href.split("?")[0];
-
   if (!company) {
+    personalInfo.ProfileLink = window.location.href.split("?")[0];
+
+    const urlParts = window.location.href.split("/");
+    const baseProfileUrl = `${urlParts[0]}//${urlParts[2]}/${urlParts[3]}/${urlParts[4]}/`;
+
+    personalInfo.ProfileLink = baseProfileUrl;
+
     const profile = {
       origin,
       company,
@@ -457,7 +510,7 @@ const sendProfileToBackground = (personalInfo, company) => {
     };
   }
 
-  console.log("profile", profile);
+  console.log("profile 513", profile);
 
   // send the scraped data to the background
   chrome.runtime.sendMessage(
@@ -468,59 +521,6 @@ const sendProfileToBackground = (personalInfo, company) => {
     (response) => {}
   );
 };
-
-// const extractProfileInfo = (origin: string) => {
-//   let personalInfo: any = "",
-//     workExperience: any = "",
-//     educationDetails: any = "",
-//     licenseCertification: any = "",
-//     skills: any = "",
-//     // tags: any = "";
-//     company: any = false;
-
-//   if (origin === "linkedin") {
-//     // Check if it's a company profile
-//     if (window.location.href.includes("/company/")) {
-//       personalInfo = extractLinkedinCompanyInfo();
-//       company = true;
-//     } else {
-//       personalInfo = extractLinkedinPersonalInfo();
-//       workExperience = extractLinkedinWorkExperience();
-//       educationDetails = extractLinkedinEducationDetails();
-//       licenseCertification = extractLinkedinLicenseCertification();
-//       skills = extractLinkedinSkills();
-//     }
-//   } else if (origin === "twitter") {
-//     personalInfo = extractTwitter();
-//   } else if (origin === "upwork") {
-//     personalInfo = extractUpworkPersonalInfo();
-//     skills = extractUpworkSkills();
-//   }
-
-//   personalInfo.ProfileLink = window.location.href.split("?")[0];
-
-//   const profile = {
-//     origin,
-//     company,
-//     personalInfo,
-//     workExperience,
-//     educationDetails,
-//     licenseCertification,
-//     skills,
-//     // tags,
-//   };
-
-//   console.log(profile, "profile");
-
-//   // send the scrap data to the background
-//   chrome.runtime.sendMessage(
-//     {
-//       type: "INFO",
-//       profile,
-//     },
-//     (response) => {}
-//   );
-// };
 
 // reading the message from background
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import Loader from "../../utils/Loader";
 
 interface LeadProfile {
+  features: any;
   email_content: string;
   email_subject: string;
 }
@@ -34,10 +35,13 @@ const EmailForm: React.FC<EmailFormProps> = ({
   const [email, setEmail] = useState<string>("");
   const [errors, setErrors] = useState<Errors>({});
 
+  console.log("Lead Profile:", leadProfile);
+
   useEffect(() => {
     if (leadProfile) {
       setEmailContent(leadProfile.email_content);
       setEmailSubject(leadProfile.email_subject);
+      setEmail(leadProfile.features.personalInfo.email || "");
     }
   }, [leadProfile]);
 
