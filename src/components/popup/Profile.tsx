@@ -12,6 +12,8 @@ const Profile: React.FC<any> = ({ profile }) => {
   }, 3000);
 
   useEffect(() => {
+    console.log("Posting data to the API:", profile);
+
     if (profile && !profile?.company) {
       postScrapedData();
     }
@@ -38,7 +40,7 @@ const Profile: React.FC<any> = ({ profile }) => {
     }
   };
 
-  console.log("profile", profile);
+  // console.log("profile", profile);
 
   return (
     <>

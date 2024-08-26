@@ -8,7 +8,8 @@ import axios from "axios";
 import { DataStore, LogoutIcon, SettingsIcon } from "./components/utils/Svgs";
 import SignIn from "./components/popup/auth/Signin";
 import SignUp from "./components/popup/auth/Signup";
-import { TOKEN, REFRESH_TOKEN } from "./config/apiConfig";
+import { TOKEN, REFRESH_TOKEN, API } from "./config/apiConfig";
+import ApiUrls from "./config/ApiUrls";
 
 const Popup: React.FC = () => {
   const [profile, setProfile] = useState<StoredData["profile"] | undefined>();
@@ -91,6 +92,40 @@ const Popup: React.FC = () => {
     }
   };
 
+  // Fetch profiles and store them in Chrome Storage
+  useEffect(() => {
+    const fetchAndStoreProfiles = async () => {
+      try {
+        const response = await API.get(ApiUrls.LEAD_LIST, {
+          params: {
+            page: 1,
+            limit: 10,
+          },
+        });
+
+        const leads = response.data.data.leads;
+        // console.log("Leads:", leads);
+
+        // Filter out profiles where 'company' is true and extract features
+        const filteredProfiles = leads
+          .filter((lead) => !lead.features.company)
+          .map((lead) => lead.features);
+
+        // Store the profiles directly in Chrome Storage
+        chrome.storage.local.set({ profiles: filteredProfiles }, () => {
+          // console.log(
+          //   "Profiles stored successfully in Chrome Storage:",
+          //   filteredProfiles
+          // );
+        });
+      } catch (error) {
+        console.error("Error fetching profiles:", error);
+      }
+    };
+
+    fetchAndStoreProfiles();
+  }, []);
+
   useEffect(() => {
     const handleTabChange = async () => {
       await getLocalStorageData();
@@ -107,9 +142,18 @@ const Popup: React.FC = () => {
     };
   }, []);
 
+  // chrome.storage.local.get(["profiles"], (result) => {
+  //   // Initialize an empty array to store scraped profiles
+  //   let scrapedProfiles = [];
+
+  //   if (result.profiles) {
+  //     scrapedProfiles = result.profiles;
+  //   }
+  //   console.log("Scraped Profiles:", scrapedProfiles);
+  // });
+
   useEffect(() => {
     const idToken = localStorage.getItem(TOKEN);
-    // const storedUser = localStorage.getItem("user");
 
     if (idToken && idToken !== "undefined") {
       setUser(idToken);
@@ -120,13 +164,40 @@ const Popup: React.FC = () => {
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === "INFO") {
-        console.log("message", message);
+        console.log("Received message:", message);
 
-        setProfile(message.profile);
+        const newProfile = message.profile;
 
+        // Retrieve existing scraped profiles from Chrome Storage
+        chrome.storage.local.get(["profiles"], (result) => {
+          let scrapedProfiles = [];
+
+          if (result.profiles) {
+            scrapedProfiles = result.profiles;
+          }
+
+          // Find the matching profile using ProfileLink
+          const matchingProfile = scrapedProfiles.find(
+            (profile) =>
+              profile?.personalInfo?.ProfileLink ===
+                newProfile.personalInfo.ProfileLink &&
+              profile?.origin === newProfile.origin
+          );
+
+          if (matchingProfile) {
+            matchingProfile.skills = newProfile.skills;
+            // Set the matching profile from storage
+            setProfile(matchingProfile);
+          } else {
+            // If no matching profile is found, set the new profile
+            setProfile(newProfile);
+          }
+        });
+
+        // Optional: You can remove this block if you're not sending emails
         // chrome.storage.local.get(["email"]).then((result) => {
         //   if (result.email) {
-        //     sendEmail(message.profile, result.email);
+        //     sendEmail(newProfile, result.email);
         //   }
         // });
       }

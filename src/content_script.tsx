@@ -386,13 +386,50 @@ const extractLinkedinContactEmail = () => {
   return email;
 };
 
+const extractLinkedinAllSkills = () => {
+  const skillElements = document.querySelectorAll(
+    "li.pvs-list__paged-list-item"
+  );
+
+  const skills = Array.from(skillElements).map((skillElement) => {
+    const skillNameElement = skillElement.querySelector(
+      ".hoverable-link-text span.visually-hidden"
+    );
+    return skillNameElement ? skillNameElement.textContent.trim() : null;
+  });
+
+  const uniqueSkills = [...new Set(skills.filter((skill) => skill !== null))];
+
+  return uniqueSkills;
+};
+
+const extractLinkedinAllServices = () => {
+  // Select all service list items in the LinkedIn profile
+  const serviceElements = document.querySelectorAll(
+    "li.service-pages-services-provided-card__service-pills"
+  );
+
+  // Extract the service names from each list item
+  const services = Array.from(serviceElements).map((serviceElement) => {
+    const serviceNameElement = serviceElement.querySelector(
+      ".service-pages-services-provided-card__service-pills-link"
+    );
+    return serviceNameElement ? serviceNameElement.textContent.trim() : null;
+  });
+
+  // Filter out any null values (in case a service name was not found)
+  return services.filter((service) => service !== null);
+};
+
 const extractProfileInfo = (origin: string) => {
-  let personalInfo: any = "",
-    workExperience: any = "",
+  let personalInfo: any = {};
+  let workExperience: any = "",
     educationDetails: any = "",
     licenseCertification: any = "",
     skills: any = "",
-    company: any = false;
+    services: any = "",
+    company: boolean = false,
+    scrapSkills: boolean = false;
 
   if (origin === "linkedin") {
     // Check if it's a company profile
@@ -423,12 +460,18 @@ const extractProfileInfo = (origin: string) => {
       } else {
         sendProfileToBackground(personalInfo, company);
       }
+    } else if (window.location.href.includes("/details/skills")) {
+      skills = extractLinkedinAllSkills();
+      scrapSkills = true;
+    } else if (window.location.href.includes("/details/services")) {
+      services = extractLinkedinAllServices();
     } else {
       personalInfo = extractLinkedinPersonalInfo();
       workExperience = extractLinkedinWorkExperience();
       educationDetails = extractLinkedinEducationDetails();
       licenseCertification = extractLinkedinLicenseCertification();
       skills = extractLinkedinSkills();
+      services = "";
 
       // Check if email information is missing
       const email = extractLinkedinContactEmail();
@@ -479,6 +522,8 @@ const extractProfileInfo = (origin: string) => {
       educationDetails,
       licenseCertification,
       skills,
+      services,
+      scrapSkills,
       // tags,
     };
 
@@ -509,8 +554,6 @@ const sendProfileToBackground = (personalInfo, company) => {
       // skills: [],
     };
   }
-
-  console.log("profile 513", profile);
 
   // send the scraped data to the background
   chrome.runtime.sendMessage(

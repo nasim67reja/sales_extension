@@ -38,6 +38,19 @@ const ScrapedData = ({ open }) => {
         const filteredProfiles = leads.filter((lead) => !lead.features.company);
 
         setAllProfiles(filteredProfiles);
+
+        // Filter out profiles where 'company' is true and extract features
+        const filteredProfilesStore = leads
+          .filter((lead) => !lead.features.company)
+          .map((lead) => lead.features);
+
+        // Store the profiles directly in Chrome Storage
+        chrome.storage.local.set({ profiles: filteredProfilesStore }, () => {
+          console.log(
+            "Profiles stored successfully in Chrome Storage:",
+            filteredProfilesStore
+          );
+        });
       } catch (error) {
         console.error("Error fetching profiles:", error);
       } finally {
@@ -101,12 +114,7 @@ const ScrapedData = ({ open }) => {
             </thead>
             <tbody>
               {allProfiles?.map((profile, index) => (
-                <tr
-                  className={`row row-td ${
-                    profile.features.jobPosted ? "job-posted-row" : ""
-                  }`}
-                  key={index}
-                >
+                <tr className={`row row-td`} key={index}>
                   <td>
                     <div className="user">
                       <img
@@ -123,7 +131,7 @@ const ScrapedData = ({ open }) => {
                     </div>
                   </td>
                   <td>
-                    {profile.company_profile.companyProfile
+                    {profile.company_profile?.companyProfile
                       ? profile.company_profile.companyProfile.personalInfo
                           ?.profileName
                       : "-"}

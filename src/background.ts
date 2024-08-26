@@ -1,5 +1,6 @@
 // background.js
 
+// Handle messages from other parts of the extension
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.action === "startScraping") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -33,9 +34,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             },
             (response) => {
               if (chrome.runtime.lastError) {
-                // console.error(
-                //   `Error sending message to content script: ${chrome.runtime.lastError.message}`
-                // );
                 sendResponse({
                   error: "Error communicating with the content script.",
                 });
@@ -67,20 +65,43 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
       if (result.profiles) {
         scrapedProfiles = result.profiles;
       }
-      // Find the index of the existing profile, if it exists
-      const existingProfileIndex = scrapedProfiles.findIndex(
-        (profile) =>
-          profile?.personalInfo?.profileName ===
-            newProfile.personalInfo.profileName &&
-          profile?.origin === newProfile.origin
-      );
+      console.log("Scraped Profiles:", scrapedProfiles, newProfile);
 
-      if (existingProfileIndex !== -1) {
-        // Replace the existing profile with the new profile
-        scrapedProfiles[existingProfileIndex] = newProfile;
+      // Determine the index of the existing profile
+      let existingProfileIndex;
+
+      if (newProfile.scrapSkills) {
+        // Find the profile by ProfileLink if scrapSkills is true
+        existingProfileIndex = scrapedProfiles.findIndex(
+          (profile) =>
+            profile?.personalInfo?.ProfileLink ===
+              newProfile.personalInfo.ProfileLink &&
+            profile?.origin === newProfile.origin
+        );
+
+        if (existingProfileIndex !== -1) {
+          // Only update the skills in the existing profile
+          scrapedProfiles[existingProfileIndex].skills = newProfile.skills;
+        } else {
+          // If no existing profile is found, add the new profile as is
+          scrapedProfiles = [...scrapedProfiles, newProfile];
+        }
       } else {
-        // Add the new profile to the array
-        scrapedProfiles = [...scrapedProfiles, newProfile];
+        // Find the profile by profileName (default behavior)
+        existingProfileIndex = scrapedProfiles.findIndex(
+          (profile) =>
+            profile?.personalInfo?.ProfileLink ===
+              newProfile.personalInfo.ProfileLink &&
+            profile?.origin === newProfile.origin
+        );
+
+        if (existingProfileIndex !== -1) {
+          // Replace the existing profile with the new profile
+          scrapedProfiles[existingProfileIndex] = newProfile;
+        } else {
+          // Add the new profile to the array
+          scrapedProfiles = [...scrapedProfiles, newProfile];
+        }
       }
 
       // Store the entire array in Chrome Storage API
