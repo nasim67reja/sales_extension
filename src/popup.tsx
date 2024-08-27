@@ -185,7 +185,7 @@ const Popup: React.FC = () => {
 
           if (matchingProfile) {
             matchingProfile.skills = newProfile.skills;
-            matchingProfile.scrapSkills = true;
+            matchingProfile.scrapSkills = newProfile.scrapSkills;
 
             // Set the matching profile from storage
             setProfile(matchingProfile);
