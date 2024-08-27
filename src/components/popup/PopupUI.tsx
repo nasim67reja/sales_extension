@@ -12,7 +12,11 @@ interface userInfoProp {
 
 const PopupUI: React.FC<PopupUIProps> = ({ setProfile }) => {
   const [userInfo, setUserInfo] = useState<userInfoProp>();
-  const [alreadyExist, setAlreadyExist] = useState();
+  const [alreadyExist, setAlreadyExist] = useState(false);
+  const [scrapSkills, setScrapSkills] = useState(false);
+  const [profileNotFound, setProfileNotFound] = useState(false);
+  const [scrapeButtonDisabled, setScrapeButtonDisabled] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const updateUserInfo = async () => {
@@ -56,18 +60,80 @@ const PopupUI: React.FC<PopupUIProps> = ({ setProfile }) => {
     updateUserInfo();
   }, []);
 
-  if (userInfo) {
-    //  checking all ready scrap or not
-    chrome.storage.local.get(["profiles"], (result) => {
-      if (result.profiles) {
-        // console.log("result", result.profiles, userInfo);
-        const test = result.profiles.some(
-          (item) => item.personalInfo.ProfileLink === userInfo?.profileUrl
-        );
-        setAlreadyExist(test);
-      }
-    });
-  }
+  useEffect(() => {
+    if (userInfo) {
+      const baseProfileUrl = userInfo.profileUrl
+        .split("/")
+        .slice(0, 5)
+        .join("/");
+
+      chrome.storage.local.get(["profiles"], async (result) => {
+        if (result.profiles) {
+          console.log("result", result.profiles, baseProfileUrl);
+          const profile = result.profiles.find(
+            (item) => item.personalInfo.ProfileLink === `${baseProfileUrl}/`
+          );
+          console.log("profile 75", profile);
+
+          if (profile) {
+            setAlreadyExist(true);
+            setScrapSkills(profile.scrapSkills);
+            if (profile.scrapSkills) {
+              setMessage("This profile has already been scraped.");
+              setScrapeButtonDisabled(false);
+            } else {
+              setMessage("Profile scraped, but skills have not been scraped.");
+              setScrapeButtonDisabled(false);
+            }
+          } else {
+            const [tab] = await chrome.tabs.query({
+              active: true,
+              currentWindow: true,
+            });
+
+            if (tab.url.includes("/details/skills")) {
+              setMessage("Cannot scrape skills before scraping the profile.");
+              setScrapeButtonDisabled(true);
+              setProfileNotFound(true);
+            }
+
+            // Listen for tab updates
+            chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+              if (tab.active) {
+                setScrapeButtonDisabled(false);
+                setProfileNotFound(false);
+                setMessage("");
+              }
+            });
+
+            // Listen for tab activation changes
+            chrome.tabs.onActivated.addListener((activeInfo) => {
+              setScrapeButtonDisabled(false);
+              setProfileNotFound(false);
+              setMessage("");
+            });
+          }
+        } else {
+          // setMessage("Cannot scrape skills before scraping the profile.");
+          setScrapeButtonDisabled(true);
+          setProfileNotFound(true);
+        }
+      });
+    }
+  }, [userInfo]);
+
+  // if (userInfo) {
+  //   //  checking all ready scrap or not
+  //   chrome.storage.local.get(["profiles"], (result) => {
+  //     if (result.profiles) {
+  //       // console.log("result", result.profiles, userInfo);
+  //       const test = result.profiles.some(
+  //         (item) => item.personalInfo.ProfileLink === userInfo?.profileUrl
+  //       );
+  //       setAlreadyExist(test);
+  //     }
+  //   });
+  // }
 
   // console.log("userinfo", userInfo);
 
@@ -113,8 +179,10 @@ const PopupUI: React.FC<PopupUIProps> = ({ setProfile }) => {
       </div>
       <div className="center">
         <button
-          disabled={!userInfo}
-          className={`btn ${!userInfo ? "disable" : "active"}`}
+          disabled={!userInfo || scrapeButtonDisabled}
+          className={`btn ${
+            !userInfo || scrapeButtonDisabled ? "disable" : "active"
+          }`}
           onClick={startScraping}
         >
           <span>
@@ -123,14 +191,17 @@ const PopupUI: React.FC<PopupUIProps> = ({ setProfile }) => {
           {userInfo ? `Scrap ${userInfo.userName}` : "Start Scraping"}
         </button>
       </div>
-      {alreadyExist && userInfo && (
+      {/* {alreadyExist && userInfo && (
         <p className="exist-warn">
           This profile has already been scraped. If you want to update it, then
           scrape again.
         </p>
-      )}
+      )} */}
       {!userInfo && (
         <p className="error text-center">This is not a valid profile page</p>
+      )}
+      {userInfo && message && (
+        <p className="error info-message text-center">{message}</p>
       )}
 
       <div>

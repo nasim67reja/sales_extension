@@ -65,7 +65,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
       if (result.profiles) {
         scrapedProfiles = result.profiles;
       }
-      console.log("Scraped Profiles:", scrapedProfiles, newProfile);
 
       // Determine the index of the existing profile
       let existingProfileIndex;
@@ -82,6 +81,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         if (existingProfileIndex !== -1) {
           // Only update the skills in the existing profile
           scrapedProfiles[existingProfileIndex].skills = newProfile.skills;
+          scrapedProfiles[existingProfileIndex].scrapSkills = true;
         } else {
           // If no existing profile is found, add the new profile as is
           scrapedProfiles = [...scrapedProfiles, newProfile];

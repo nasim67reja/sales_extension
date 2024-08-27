@@ -3,6 +3,14 @@ export const userBasicInfo = () => {
     .querySelector(".text-heading-xlarge")
     ?.textContent.trim();
 
+  // Fallback to scrape the name from the provided DOM structure if LinkedIn name is not found
+  const userName =
+    linkedinName ||
+    document
+      .querySelector(".artdeco-entity-lockup__content")
+      ?.querySelector(".artdeco-entity-lockup__title")
+      ?.textContent.trim();
+
   let companyName = null;
   const taglineElement = document
     .querySelector(".org-top-card__primary-content")
@@ -33,7 +41,7 @@ export const userBasicInfo = () => {
       .textContent || "";
 
   const profileInfo = {
-    userName: companyName || linkedinName || upworkName || twitterName || null,
+    userName: companyName || userName || upworkName || twitterName || null,
     profileUrl: window.location.href.split("?")[0],
     isExist: false,
   };

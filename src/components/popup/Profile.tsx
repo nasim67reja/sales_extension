@@ -21,26 +21,18 @@ const Profile: React.FC<any> = ({ profile }) => {
 
   const postScrapedData = async () => {
     try {
+      console.log("Posting data to the API:", profile);
       const response = await API.post(ApiUrls.LEAD_CREATE, {
         features: profile,
       });
       console.log("API Response:", response.data);
-      // toast.success("Data posted successfully!");
-      profile.jobPosted = true;
     } catch (error) {
-      // console.error("Error posting data:", error);
-      // toast.error("Failed to post data. Please try again.");
-      // Handle the error as needed
-      profile.jobPosted = false; // Set to false on error if necessary
     } finally {
-      // Update local storage after the API call, regardless of success or failure
       chrome.storage.local.set({ profiles: [profile] }, () => {
         console.log("Profiles updated in local storage:", [profile]);
       });
     }
   };
-
-  // console.log("profile", profile);
 
   return (
     <>

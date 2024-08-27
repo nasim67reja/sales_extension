@@ -122,9 +122,8 @@ const Popup: React.FC = () => {
         console.error("Error fetching profiles:", error);
       }
     };
-
-    fetchAndStoreProfiles();
-  }, []);
+    if (user) fetchAndStoreProfiles();
+  }, [user]);
 
   useEffect(() => {
     const handleTabChange = async () => {
@@ -186,6 +185,8 @@ const Popup: React.FC = () => {
 
           if (matchingProfile) {
             matchingProfile.skills = newProfile.skills;
+            matchingProfile.scrapSkills = true;
+
             // Set the matching profile from storage
             setProfile(matchingProfile);
           } else {
