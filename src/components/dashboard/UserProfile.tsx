@@ -67,7 +67,7 @@ const UserProfile = ({ visibleProfile, companyProfile, setShowEmailForm }) => {
               )}
             </div>
             <div style={{ marginTop: "10px" }}>
-              {Object.keys(companyProfile)?.length === 0 ? (
+              {companyProfile && Object.keys(companyProfile).length === 0 ? (
                 <p style={{ color: "red" }}>
                   You have not been assigned to any company yet.
                 </p>
