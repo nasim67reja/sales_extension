@@ -685,3 +685,42 @@ button {
   margin-top: -8px;
   margin-bottom: 10px;
 }
+
+/* Add this CSS to your stylesheet */
+
+.input-group {
+  /* margin-bottom: 16px; */
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group input {
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+  border-color: #2684ff; /* Match CreatableSelect focus color */
+  outline: none;
+}
+
+.input-group .error {
+  color: #d32f2f; /* Red color for errors */
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+input::placeholder {
+  color: #888; /* Placeholder color */
+  opacity: 1; /* Override Safari placeholder opacity */
+}
+
+input[type="text"],
+input[type="password"] {
+  background-color: #fff; /* White background to match the page */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}

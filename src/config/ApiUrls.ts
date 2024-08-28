@@ -6,5 +6,7 @@ export default {
   LEAD_CREATE: "/lead_management/create/",
   LEAD_LIST: "/lead_management/list/",
   COMPANY_PROFILE: (leadId) => `/lead_management/details/${leadId}/`,
+  EMAIL_LIST: "/lead_management/email-settings/ ",
+
   SEND_MAIL: "/lead_management/send-email/",
 };

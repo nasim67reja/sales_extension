@@ -51,11 +51,15 @@ const EmailForm: React.FC<EmailFormProps> = ({
     e.preventDefault();
     if (validateForm()) {
       setLoading(true); // Start loader
+
+      const result = await chrome.storage.local.get(["email"]);
+      const storedEmail = result.email;
       try {
         const response = await API.post(ApiUrls.SEND_MAIL, {
           email_content: emailContent,
           email_subject: emailSubject,
           email,
+          host_user: storedEmail || "docadvisor@shadhinlab.com",
         });
         console.log("API Response:", response.data);
         toast.success("Email sent successfully!"); // Show success toast
